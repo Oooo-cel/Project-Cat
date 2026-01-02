@@ -14,6 +14,11 @@
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
+  function speak(text) {
+    const msg = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(msg);
+  }
+
   function talk() {
     if (!SpeechRecognition) {
       alert("Voice not supported");
@@ -22,20 +27,24 @@
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-
     recognition.start();
 
     recognition.onresult = function (event) {
-      const text = event.results[0][0].transcript;
+      const text = event.results[0][0].transcript.toLowerCase();
 
-      const msg = new SpeechSynthesisUtterance(
-        "You said " + text
-      );
-      speechSynthesis.speak(msg);
+      if (text.includes("hello")) {
+        speak("Hello, how can I help you?");
+      } else if (text.includes("your name")) {
+        speak("My name is Cat");
+      } else if (text.includes("time")) {
+        speak("The time is " + new Date().toLocaleTimeString());
+      } else {
+        speak("Sorry, I did not understand");
+      }
     };
   }
 </script>
   
-
+  
 </body>
 </html>
