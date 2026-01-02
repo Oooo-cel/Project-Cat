@@ -12,7 +12,8 @@
 
 <script>
   function talk() {
-    alert("Hello, I am Cat");
+    const msg = new SpeechSynthesisUtterance("Hello, I am Cat");
+    speechSynthesis.speak(msg);
   }
 </script>
 
