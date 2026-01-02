@@ -11,11 +11,31 @@
 <button onclick="talk()">🎤 Talk</button>
 
 <script>
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
   function talk() {
-    const msg = new SpeechSynthesisUtterance("Hello, I am Cat");
-    speechSynthesis.speak(msg);
+    if (!SpeechRecognition) {
+      alert("Voice not supported");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+
+    recognition.start();
+
+    recognition.onresult = function (event) {
+      const text = event.results[0][0].transcript;
+
+      const msg = new SpeechSynthesisUtterance(
+        "You said " + text
+      );
+      speechSynthesis.speak(msg);
+    };
   }
 </script>
+  
 
 </body>
 </html>
