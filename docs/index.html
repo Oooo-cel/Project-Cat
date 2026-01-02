@@ -1,50 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Cat</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat – Web Voice Maid</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a7cff">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .app {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 420px;
+    }
+    h1 { margin-bottom: 10px; }
+    button {
+      margin-top: 20px;
+      padding: 15px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #0a7cff;
+      color: white;
+      cursor: pointer;
+    }
+    button:active { transform: scale(0.95); }
+    .log {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #ccc;
+      min-height: 40px;
+    }
+  </style>
 </head>
 <body>
 
-<h1>🐱 Cat</h1>
-<p>Tap the button and talk to Cat</p>
-
-<button onclick="talk()">🎤 Talk</button>
+<div class="app">
+  <h1>🐱 Cat</h1>
+  <p>Your web voice maid</p>
+  <button onclick="listen()">🎤 Talk to Cat</button>
+  <div class="log" id="log">Idle</div>
+</div>
 
 <script>
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+  const log = document.getElementById('log');
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const synth = window.speechSynthesis;
 
   function speak(text) {
-    const msg = new SpeechSynthesisUtterance(text);
-    speechSynthesis.speak(msg);
+    const u = new SpeechSynthesisUtterance(text);
+    synth.speak(u);
   }
 
-  function talk() {
+  function listen() {
     if (!SpeechRecognition) {
-      alert("Voice not supported");
+      alert('Voice not supported on this browser');
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.start();
+    const rec = new SpeechRecognition();
+    rec.lang = 'en-US';
+    rec.start();
+    log.innerText = 'Listening...';
 
-    recognition.onresult = function (event) {
-      const text = event.results[0][0].transcript.toLowerCase();
-
-      if (text.includes("hello")) {
-        speak("Hello, how can I help you?");
-      } else if (text.includes("your name")) {
-        speak("My name is Cat");
-      } else if (text.includes("time")) {
-        speak("The time is " + new Date().toLocaleTimeString());
+    rec.onresult = (e) => {
+      const text = e.results[0][0].transcript.toLowerCase();
+      log.innerText = 'You said: ' + text;
+      // wake word check
+      if (text.startsWith('hey cat')) {
+        const command = text.replace('hey cat', '').trim();
+        speak('Yes?');
+        if (command) handleCommand(command);
       } else {
-        speak("Sorry, I did not understand");
+        speak('Say hey cat to wake me');
       }
     };
+
+    rec.onerror = () => {
+      log.innerText = 'Error listening';
+    };
   }
+
+  function handleCommand(text) {
+  let name = localStorage.getItem('cat_name');
+
+  if (text.includes('my name is')) {
+    name = text.replace('my name is', '').trim();
+    localStorage.setItem('cat_name', name);
+    speak('Nice to meet you ' + name);
+  }
+  else if (text.includes('who am i')) {
+    speak(name ? 'You are ' + name : 'I do not know your name yet');
+  }
+  else if (text.includes('hello') || text.includes('hi')) {
+    speak(name ? 'Hello ' + name + ', how can I help you?' : 'Hello, I am Cat. How can I help you?');
+  }
+  else if (text.includes('time')) {
+    speak('The time is ' + new Date().toLocaleTimeString());
+  }
+  else if (text.includes('call')) {
+    const number = text.replace('call', '').trim().replace(/\s/g, '');
+    if (number) {
+      speak('Opening dialer');
+      window.location.href = 'tel:' + number;
+    } else {
+      speak('Please say the number to call');
+    }
+  }
+  else {
+    speak('Sorry, I did not understand');
+  }
+  }
+  
 </script>
-  
-  
+
 </body>
 </html>
